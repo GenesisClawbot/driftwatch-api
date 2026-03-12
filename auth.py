@@ -1,10 +1,12 @@
 """
 Authentication helpers - JWT token creation and verification
+Uses argon2-cffi for password hashing (passlib/bcrypt incompatibility workaround)
 """
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError, VerificationError, InvalidHashError
 from pydantic import BaseModel
 import os
 
@@ -14,7 +16,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
 # Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+_ph = PasswordHasher()
 
 
 class TokenData(BaseModel):
@@ -24,12 +26,15 @@ class TokenData(BaseModel):
 
 def hash_password(password: str) -> str:
     """Hash a password for storage"""
-    return pwd_context.hash(password)
+    return _ph.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against its hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return _ph.verify(hashed_password, plain_password)
+    except (VerifyMismatchError, VerificationError, InvalidHashError):
+        return False
 
 
 def create_access_token(user_id: str, email: str, expires_delta: Optional[timedelta] = None) -> str:
