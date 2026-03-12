@@ -1,0 +1,43 @@
+{
+  "$schema": "https://railway.app/schema.json",
+  "build": {
+    "builder": "dockerfile"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "uvicorn main:app --host 0.0.0.0 --port $PORT"
+  },
+  "variables": {
+    "SECRET_KEY": {
+      "description": "JWT secret key for token signing",
+      "value": ""
+    },
+    "DATABASE_URL": {
+      "description": "Database URL (default: SQLite)",
+      "value": "sqlite:///./driftwatch.db"
+    },
+    "ANTHROPIC_API_KEY": {
+      "description": "Anthropic API key for drift detection",
+      "sensitive": true,
+      "value": ""
+    },
+    "SMTP_HOST": {
+      "description": "SMTP host for email alerts (optional)",
+      "value": ""
+    },
+    "SMTP_PORT": {
+      "description": "SMTP port",
+      "value": "587"
+    },
+    "SMTP_USER": {
+      "description": "SMTP username (optional)",
+      "sensitive": true,
+      "value": ""
+    },
+    "SMTP_PASS": {
+      "description": "SMTP password (optional)",
+      "sensitive": true,
+      "value": ""
+    }
+  }
+}
